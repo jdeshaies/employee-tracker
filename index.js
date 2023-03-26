@@ -36,11 +36,14 @@ const askUser = () => {
       if (choice === "View All Departments") {
         viewDepartments();
       }
+      if (choice === "View All Roles") {
+        viewRoles();
+      }
     });
 };
 
 const viewDepartments = () => {
-  const query = "SELECT * FROM department;";
+  const query = `SELECT * FROM department;`;
   db.promise()
     .query(query)
     .then(([rows]) => {
@@ -48,7 +51,19 @@ const viewDepartments = () => {
       console.table(rows);
     })
     .catch(console.log)
-    .then(() => db.end())
+    .then(() => db.end());
+};
+
+const viewRoles = () => {
+  const query = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id;`;
+  db.promise()
+    .query(query)
+    .then(([rows]) => {
+      console.log("\n");
+      console.table(rows);
+    })
+    .catch(console.log)
+    .then(() => db.end());
 };
 
 askUser();
