@@ -1,6 +1,6 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
-const query = require("./db/queries");
+// const query = require("./db/queries");
 const table = require("console.table");
 
 // Connects to company database
@@ -42,13 +42,16 @@ const askUser = () => {
       if (choice === "View All Employees") {
         viewEmployees();
       }
+      if (choice === "Add Department") {
+        addDepartment();
+      }
     });
 };
 
 const viewDepartments = () => {
-  const query = `SELECT * FROM department;`;
+  const sql = `SELECT * FROM department;`;
   db.promise()
-    .query(query)
+    .query(sql)
     .then(([rows]) => {
       console.log("\n");
       console.table(rows);
@@ -58,7 +61,7 @@ const viewDepartments = () => {
 };
 
 const viewRoles = () => {
-  const query = `SELECT role.id, 
+  const sql = `SELECT role.id, 
                 role.title, 
                 department.name AS department, 
                 role.salary 
@@ -66,7 +69,7 @@ const viewRoles = () => {
                 INNER JOIN department ON role.department_id = department.id 
                 ORDER BY role.id;`;
   db.promise()
-    .query(query)
+    .query(sql)
     .then(([rows]) => {
       console.log("\n");
       console.table(rows);
@@ -76,7 +79,7 @@ const viewRoles = () => {
 };
 
 const viewEmployees = () => {
-  const query = `SELECT employee.id, 
+  const sql = `SELECT employee.id, 
                 employee.first_name, 
                 employee.last_name, 
                 role.title,
@@ -88,7 +91,7 @@ const viewEmployees = () => {
                 LEFT JOIN department ON role.department_id = department.id
                 LEFT JOIN employee manager ON employee.manager_id = manager.id`;
   db.promise()
-    .query(query)
+    .query(sql)
     .then(([rows]) => {
       console.log("\n");
       console.table(rows);
@@ -96,5 +99,21 @@ const viewEmployees = () => {
     .catch(console.log)
     .then(() => db.end());
 };
+
+const addDepartment = () => {
+    inquirer
+    .prompt({
+        type: "input",
+        message: "What is the name of the department?",
+        name: "department",
+    })
+    .then(({ department }) => {
+        const sql = `INSERT INTO department (name) 
+                    VALUES (?)`;
+        db.query(sql, department, (err, result) => {
+            if (err) throw err;
+          })
+    })
+}
 
 askUser();
