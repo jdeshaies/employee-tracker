@@ -55,7 +55,7 @@ const viewDepartments = () => {
 };
 
 const viewRoles = () => {
-  const query = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id;`;
+  const query = `SELECT role.id, role.title, department.name AS department, role.salary FROM role INNER JOIN department ON role.department_id = department.id ORDER BY role.id;`;
   db.promise()
     .query(query)
     .then(([rows]) => {
