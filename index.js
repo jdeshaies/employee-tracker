@@ -1,6 +1,6 @@
 const mysql = require("mysql2");
 const inquirer = require("inquirer");
-// const query = require("./db/queries");
+const query = require("./db/queries");
 const table = require("console.table");
 
 // Connects to company database
@@ -14,12 +14,12 @@ const db = mysql.createConnection(
   console.log(`Connected to the company_db database.`)
 );
 
-const askUser = () => {
+const promptUser = () => {
   inquirer
     .prompt([
       {
         type: "list",
-        message: "What would you like to do?",
+        message: "\nWhat would you like to do?\n",
         name: "choice",
         choices: [
           "View All Employees",
@@ -45,22 +45,32 @@ const askUser = () => {
       if (choice === "Add Department") {
         addDepartment();
       }
+      if (choice === "Add Role") {
+        addRole();
+      }
     });
 };
 
-const viewDepartments = () => {
+function viewDepartments() {
   const sql = `SELECT * FROM department;`;
-  db.promise()
-    .query(sql)
-    .then(([rows]) => {
-      console.log("\n");
-      console.table(rows);
-    })
-    .catch(console.log)
-    .then(() => db.end());
-};
+  db.query(sql, (err, departments) => {
+    if (err) throw err;
+    console.log("\n===== DEPARTMENTS =====\n");
+    console.table(departments);
+    promptUser();
+  });
+  // db.promise()
+  //   .query(sql)
+  //   .then(([rows]) => {
+  //     console.log("\n");
+  //     console.table(rows);
+  //     console.log("\n");
+  //   })
+  //   .catch(console.log);
+  // promptUser();
+}
 
-const viewRoles = () => {
+function viewRoles() {
   const sql = `SELECT role.id, 
                 role.title, 
                 department.name AS department, 
@@ -68,15 +78,22 @@ const viewRoles = () => {
                 FROM role 
                 INNER JOIN department ON role.department_id = department.id 
                 ORDER BY role.id;`;
-  db.promise()
-    .query(sql)
-    .then(([rows]) => {
-      console.log("\n");
-      console.table(rows);
-    })
-    .catch(console.log)
-    .then(() => db.end());
-};
+  db.query(sql, (err, roles) => {
+    if (err) throw err;
+    console.log("\n===== ROLES =====\n");
+    console.table(roles);
+    promptUser();
+  });
+  // db.promise()
+  //   .query(sql)
+  //   .then(([rows]) => {
+  //     console.log("\n");
+  //     console.table(rows);
+  //     console.log("\n");
+  //   })
+  //   .catch(console.log)
+  // promptUser();
+}
 
 const viewEmployees = () => {
   const sql = `SELECT employee.id, 
@@ -90,30 +107,121 @@ const viewEmployees = () => {
                 LEFT JOIN role ON employee.role_id = role.id
                 LEFT JOIN department ON role.department_id = department.id
                 LEFT JOIN employee manager ON employee.manager_id = manager.id`;
-  db.promise()
-    .query(sql)
-    .then(([rows]) => {
-      console.log("\n");
-      console.table(rows);
-    })
-    .catch(console.log)
-    .then(() => db.end());
+  db.query(sql, (err, employees) => {
+    if (err) throw err;
+    console.log("\n===== EMPLOYEES =====\n");
+    console.table(employees);
+    promptUser();
+  });
+  // db.promise()
+  //   .query(sql)
+  //   .then(([rows]) => {
+  //     console.log("\n");
+  //     console.table(rows);
+  //     console.log("\n");
+  //   })
+  //   .catch(console.log)
+  //   promptUser();
 };
 
 const addDepartment = () => {
-    inquirer
+  inquirer
     .prompt({
-        type: "input",
-        message: "What is the name of the department?",
-        name: "department",
+      type: "input",
+      message: "What is the name of the department?",
+      name: "department",
     })
     .then(({ department }) => {
-        const sql = `INSERT INTO department (name) 
+      const sql = `INSERT INTO department (name) 
                     VALUES (?)`;
-        db.query(sql, department, (err, result) => {
-            if (err) throw err;
-          })
-    })
-}
+      db.query(sql, department, (err, result) => {
+        if (err) throw err;
+      });
+      promptUser();
+    });
+};
 
-askUser();
+const addRole = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What is the name of the role?",
+        name: "role",
+      },
+      {
+        type: "input",
+        message: "What is the salary of the role?",
+        name: "salary",
+      }
+    ])
+    .then(({ role, salary }) => {
+      const roleValues = [role, salary];
+      db.query(
+        "SELECT id AS value, name AS name FROM department",
+        (err, departments) => {
+          if (err) throw err;
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "department_id",
+                message: "Which department does the role belong to?",
+                choices: departments,
+              },
+            ])
+            .then(({ department_id }) => {
+              roleValues.push(department_id);
+              const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+              db.query(sql, roleValues, (err, result) => {
+                if (err) throw err;
+              });
+              promptUser();
+            });
+        }
+      );
+    });
+  // .then(({ role, salary }) => {
+  //   let roleParams = [role, salary];
+  //   const deptSql = `SELECT name FROM department`;
+  //   db.promise()
+  //     .query(deptSql)
+  //     .then(([rows]) => {
+  //       deptArray.push(rows);
+  //     });
+  //   inquirer
+  //     .prompt({
+  //       type: "list",
+  //       message: "Which department does the role belong to?",
+  //       name: "department",
+  //       choices: ,
+  //     })
+  // .then(({ department }) => {
+  //     roleParams.push(department);
+  //   const sql = `INSERT INTO role (name)
+  //               VALUES (?)`;
+  //   db.query(sql, department, (err, result) => {
+  //     if (err) throw err;
+  //   });
+  // });
+  // });
+};
+
+// function chooseDepartment() {
+//   db.query("SELECT id AS value, name AS name FROM department", (err, departments) => {
+//     if (err) throw err;
+//     inquirer.prompt([
+//       {
+//         type: "list",
+//         name: "department_id",
+//         message: "Which department does the role belong to?",
+//         choices: departments
+//       },
+//     ])
+//     .then(({ department_id }) => {
+//       roleValues.push(department_id);
+//     })
+//   })
+// };
+
+promptUser();
