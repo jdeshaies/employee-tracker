@@ -14,7 +14,7 @@ const db = mysql.createConnection(
   console.log(`Connected to the company_db database.`)
 );
 
-const promptUser = () => {
+function promptUser() {
   inquirer
     .prompt([
       {
@@ -48,8 +48,11 @@ const promptUser = () => {
       if (choice === "Add Role") {
         addRole();
       }
+      if (choice === "Add Employee") {
+        addEmployee();
+      }
     });
-};
+}
 
 function viewDepartments() {
   const sql = `SELECT * FROM department;`;
@@ -59,15 +62,6 @@ function viewDepartments() {
     console.table(departments);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log);
-  // promptUser();
 }
 
 function viewRoles() {
@@ -84,18 +78,9 @@ function viewRoles() {
     console.table(roles);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log)
-  // promptUser();
 }
 
-const viewEmployees = () => {
+function viewEmployees() {
   const sql = `SELECT employee.id, 
                 employee.first_name, 
                 employee.last_name, 
@@ -113,18 +98,9 @@ const viewEmployees = () => {
     console.table(employees);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log)
-  //   promptUser();
-};
+}
 
-const addDepartment = () => {
+function addDepartment() {
   inquirer
     .prompt({
       type: "input",
@@ -139,9 +115,9 @@ const addDepartment = () => {
       });
       promptUser();
     });
-};
+}
 
-const addRole = () => {
+function addRole() {
   inquirer
     .prompt([
       {
@@ -153,7 +129,7 @@ const addRole = () => {
         type: "input",
         message: "What is the salary of the role?",
         name: "salary",
-      }
+      },
     ])
     .then(({ role, salary }) => {
       const roleValues = [role, salary];
@@ -181,47 +157,64 @@ const addRole = () => {
         }
       );
     });
-  // .then(({ role, salary }) => {
-  //   let roleParams = [role, salary];
-  //   const deptSql = `SELECT name FROM department`;
-  //   db.promise()
-  //     .query(deptSql)
-  //     .then(([rows]) => {
-  //       deptArray.push(rows);
-  //     });
-  //   inquirer
-  //     .prompt({
-  //       type: "list",
-  //       message: "Which department does the role belong to?",
-  //       name: "department",
-  //       choices: ,
-  //     })
-  // .then(({ department }) => {
-  //     roleParams.push(department);
-  //   const sql = `INSERT INTO role (name)
-  //               VALUES (?)`;
-  //   db.query(sql, department, (err, result) => {
-  //     if (err) throw err;
-  //   });
-  // });
-  // });
-};
+}
 
-// function chooseDepartment() {
-//   db.query("SELECT id AS value, name AS name FROM department", (err, departments) => {
-//     if (err) throw err;
-//     inquirer.prompt([
-//       {
-//         type: "list",
-//         name: "department_id",
-//         message: "Which department does the role belong to?",
-//         choices: departments
-//       },
-//     ])
-//     .then(({ department_id }) => {
-//       roleValues.push(department_id);
-//     })
-//   })
-// };
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What is the employee's first name?",
+        name: "first_name",
+      },
+      {
+        type: "input",
+        message: "What is the employee's last name?",
+        name: "last_name",
+      },
+    ])
+    .then(({ first_name, last_name }) => {
+      const employeeValues = [first_name, last_name];
+      db.query("SELECT id AS value, title AS name FROM role", (err, roles) => {
+        if (err) throw err;
+        inquirer
+          .prompt([
+            {
+              type: "list",
+              name: "role_id",
+              message: "What is the employee's role?",
+              choices: roles,
+            },
+          ])
+          .then(({ role_id }) => {
+            employeeValues.push(role_id);
+            db.query(
+              "SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employee",
+              (err, managers) => {
+                managers.unshift({ value: null, name: "None" }); 
+                if (err) throw err;
+                inquirer
+                  .prompt([
+                    {
+                      type: "list",
+                      name: "manager_id",
+                      message: "Who is the employee's manager?",
+                      choices: managers,
+                    },
+                  ])
+                  .then(({ manager_id }) => {
+                    employeeValues.push(manager_id);
+                    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+                    db.query(sql, employeeValues, (err, result) => {
+                      if (err) throw err;
+                    });
+                    promptUser();
+                  });
+              }
+            );
+          });
+      });
+    });
+}
 
 promptUser();
