@@ -59,15 +59,6 @@ function viewDepartments() {
     console.table(departments);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log);
-  // promptUser();
 }
 
 function viewRoles() {
@@ -84,15 +75,6 @@ function viewRoles() {
     console.table(roles);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log)
-  // promptUser();
 }
 
 const viewEmployees = () => {
@@ -113,15 +95,6 @@ const viewEmployees = () => {
     console.table(employees);
     promptUser();
   });
-  // db.promise()
-  //   .query(sql)
-  //   .then(([rows]) => {
-  //     console.log("\n");
-  //     console.table(rows);
-  //     console.log("\n");
-  //   })
-  //   .catch(console.log)
-  //   promptUser();
 };
 
 const addDepartment = () => {
@@ -181,47 +154,7 @@ const addRole = () => {
         }
       );
     });
-  // .then(({ role, salary }) => {
-  //   let roleParams = [role, salary];
-  //   const deptSql = `SELECT name FROM department`;
-  //   db.promise()
-  //     .query(deptSql)
-  //     .then(([rows]) => {
-  //       deptArray.push(rows);
-  //     });
-  //   inquirer
-  //     .prompt({
-  //       type: "list",
-  //       message: "Which department does the role belong to?",
-  //       name: "department",
-  //       choices: ,
-  //     })
-  // .then(({ department }) => {
-  //     roleParams.push(department);
-  //   const sql = `INSERT INTO role (name)
-  //               VALUES (?)`;
-  //   db.query(sql, department, (err, result) => {
-  //     if (err) throw err;
-  //   });
-  // });
-  // });
 };
 
-// function chooseDepartment() {
-//   db.query("SELECT id AS value, name AS name FROM department", (err, departments) => {
-//     if (err) throw err;
-//     inquirer.prompt([
-//       {
-//         type: "list",
-//         name: "department_id",
-//         message: "Which department does the role belong to?",
-//         choices: departments
-//       },
-//     ])
-//     .then(({ department_id }) => {
-//       roleValues.push(department_id);
-//     })
-//   })
-// };
 
 promptUser();
