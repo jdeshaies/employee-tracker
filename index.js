@@ -51,6 +51,9 @@ function promptUser() {
       if (choice === "Add Employee") {
         addEmployee();
       }
+      if (choice === "Update Employee Role") {
+        updateEmployeeRole();
+      }
     });
 }
 
@@ -191,7 +194,7 @@ function addEmployee() {
             db.query(
               "SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employee",
               (err, managers) => {
-                managers.unshift({ value: null, name: "None" }); 
+                managers.unshift({ value: null, name: "None" });
                 if (err) throw err;
                 inquirer
                   .prompt([
@@ -215,6 +218,48 @@ function addEmployee() {
           });
       });
     });
+}
+
+function updateEmployeeRole() {
+  db.query(
+    "SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employee",
+    (err, employees) => {
+      if (err) throw err;
+      inquirer.prompt([
+        {
+          type: "list",
+          name: "employee_id",
+          message: "Which employee's role do you want to update?",
+          choices: employees,
+        },
+      ])
+      .then(( {employee_id }) => {
+        const employeeUpdateValues = [employee_id];
+        db.query(
+          "SELECT id AS value, title AS name FROM role",
+          (err, roles) => {
+            if (err) throw err;
+            inquirer.prompt([
+              {
+                type: "list",
+                name: "role_id",
+                message: "Which role do you want to assign the selected employee?",
+                choices: roles,
+              },
+            ])
+            .then(( {role_id }) => {
+              employeeUpdateValues.unshift(role_id);
+              const sql = "UPDATE employee SET role_id=? WHERE id=?";
+              db.query(sql, employeeUpdateValues, (err, result) => {
+                if (err) throw err;
+              });
+              promptUser();
+            })
+          }
+        )
+      })
+    }
+  );
 }
 
 promptUser();
