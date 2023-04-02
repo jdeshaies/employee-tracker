@@ -14,6 +14,7 @@ const db = mysql.createConnection(
   console.log(`Connected to the company_db database.`)
 );
 
+// Function that allows user to select what they would like to do
 function promptUser() {
   inquirer
     .prompt([
@@ -22,6 +23,7 @@ function promptUser() {
         message: "\nWhat would you like to do?\n",
         name: "choice",
         choices: [
+          "Exit Program",
           "View All Employees",
           "Add Employee",
           "Update Employee Role",
@@ -33,6 +35,9 @@ function promptUser() {
       },
     ])
     .then(({ choice }) => {
+      if (choice === "Exit Program") {
+        process.exit();
+      }
       if (choice === "View All Departments") {
         viewDepartments();
       }
@@ -57,6 +62,7 @@ function promptUser() {
     });
 }
 
+// Shows all departments
 function viewDepartments() {
   const sql = `SELECT * FROM department;`;
   db.query(sql, (err, departments) => {
@@ -67,6 +73,7 @@ function viewDepartments() {
   });
 }
 
+// Shows all roles, the department it belongs to, and the salary
 function viewRoles() {
   const sql = `SELECT role.id, 
                 role.title, 
@@ -83,6 +90,7 @@ function viewRoles() {
   });
 }
 
+// Shows all employees, their role, department, and manager (if there is one)
 function viewEmployees() {
   const sql = `SELECT employee.id, 
                 employee.first_name, 
@@ -103,6 +111,7 @@ function viewEmployees() {
   });
 }
 
+// Function to add a new department
 function addDepartment() {
   inquirer
     .prompt({
@@ -116,10 +125,12 @@ function addDepartment() {
       db.query(sql, department, (err, result) => {
         if (err) throw err;
       });
+      console.log("\nDepartment Added\n");
       promptUser();
     });
 }
 
+//Function to add a new role
 function addRole() {
   inquirer
     .prompt([
@@ -155,6 +166,7 @@ function addRole() {
               db.query(sql, roleValues, (err, result) => {
                 if (err) throw err;
               });
+              console.log("\Role Added\n");
               promptUser();
             });
         }
@@ -162,6 +174,7 @@ function addRole() {
     });
 }
 
+// Function to add a new employee
 function addEmployee() {
   inquirer
     .prompt([
@@ -211,6 +224,7 @@ function addEmployee() {
                     db.query(sql, employeeValues, (err, result) => {
                       if (err) throw err;
                     });
+                    console.log("\nEmployee Added\n");
                     promptUser();
                   });
               }
@@ -220,6 +234,7 @@ function addEmployee() {
     });
 }
 
+// Function to update the selected employee's role
 function updateEmployeeRole() {
   db.query(
     "SELECT id AS value, CONCAT(first_name, ' ', last_name) AS name FROM employee",
@@ -253,6 +268,7 @@ function updateEmployeeRole() {
               db.query(sql, employeeUpdateValues, (err, result) => {
                 if (err) throw err;
               });
+              console.log("\nEmployee Role Updated\n");
               promptUser();
             })
           }
